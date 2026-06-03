@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>尚恰分析报告合集</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8edf3 100%);
+    color: #2c3e50;
+    min-height: 100vh;
+    padding: 60px 20px;
+    line-height: 1.6;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 56px; }
+  h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #1a2733;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .subtitle { color: #7a8899; font-size: 15px; }
+  .cards { display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .cards { grid-template-columns: 1fr 1fr; } }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 12px;
+    color: #5a6c7d;
+    background: #eef2f7;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    align-self: flex-start;
+    letter-spacing: 0.3px;
+  }
+  .card h2 {
+    font-size: 19px;
+    font-weight: 600;
+    color: #1a2733;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .desc {
+    color: #6b7c8c;
+    font-size: 14px;
+    flex-grow: 1;
+    margin-bottom: 20px;
+  }
+  .cta {
+    color: #1565c0;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  footer {
+    text-align: center;
+    margin-top: 56px;
+    color: #99a8b8;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>尚恰分析报告合集</h1>
+      <p class="subtitle">行业运营专家诊断 · 持续更新</p>
+    </header>
+    <div class="cards">
+      <a class="card" href="./toufang-qinfendu/">
+        <span class="tag">投放诊断</span>
+        <h2>投放勤奋度诊断报告</h2>
+        <p class="desc">从投放频次、覆盖广度、迭代节奏等维度，诊断尚恰当前投放团队的勤奋度水位与改进空间。</p>
+        <span class="cta">查看报告 →</span>
+      </a>
+    </div>
+    <footer>最后更新：2026-06-04</footer>
+  </div>
+</body>
+</html>

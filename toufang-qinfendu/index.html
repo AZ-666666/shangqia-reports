@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>尚恰 - 投放勤奋度诊断报告</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei','WenQuanYi Micro Hei',sans-serif;background:#f5f6fa;color:#2d3436;line-height:1.6}
+.container{max-width:1500px;margin:0 auto;padding:20px}
+
+/* 大表头 */
+.stage-card{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);border-radius:16px;padding:40px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+.stage-card::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(0,184,148,0.15),transparent);border-radius:50%}
+.stage-name{font-size:32px;font-weight:700;margin-bottom:8px}
+.stage-subtitle{font-size:14px;color:#b2bec3;margin-bottom:20px}
+.stage-badges{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.stage-badge{padding:6px 16px;border-radius:20px;font-size:18px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.stage-badge.l1{background:linear-gradient(135deg,#0984e3,#74b9ff)}
+.stage-badge.l2{background:linear-gradient(135deg,#00b894,#55efc4)}
+.stage-badge.l3{background:linear-gradient(135deg,#f39c12,#fdcb6e)}
+.stage-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stage-metric{text-align:center;padding:12px;background:rgba(255,255,255,0.08);border-radius:10px}
+.stage-metric .val{font-size:22px;font-weight:700;color:#55efc4}
+.stage-metric .label{font-size:12px;color:#b2bec3;margin-top:4px}
+.stage-conclusion{border-left:4px solid #55efc4;padding:12px 16px;background:rgba(0,184,148,0.1);border-radius:0 8px 8px 0;font-size:16px;font-weight:600;color:#55efc4}
+
+/* Section */
+.section{background:#fff;border-radius:14px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.section-header{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;margin-bottom:20px}
+.section-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}
+.section-icon.l1{background:#0984e3}
+.section-icon.l2{background:#00b894}
+.section-icon.l3{background:#f39c12}
+.section-title{font-size:20px;font-weight:700;color:#2d3436}
+.section-tag{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;color:#fff}
+.section-tag.l1{background:#0984e3}
+.section-tag.l2{background:#00b894}
+.section-tag.l3{background:#f39c12}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{background:#f8f9fa;padding:10px 14px;text-align:left;font-size:12px;color:#636e72;font-weight:600;border-bottom:2px solid #e0e0e0}
+td{padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#2d3436}
+tr:hover td{background:#f8f9fa}
+
+/* 场景卡片 */
+.scene-wrapper{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.scene-platform{border-radius:12px;padding:16px;flex:1;min-width:300px}
+.scene-platform.adq{border:2px solid #0984e3;background:rgba(9,132,227,0.03)}
+.scene-platform.wxshop{border:2px solid #00b894;background:rgba(0,184,148,0.03)}
+.scene-platform-title{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e0e0e0}
+.scene-platform.adq .scene-platform-title{color:#0984e3}
+.scene-platform.wxshop .scene-platform-title{color:#00b894}
+.scene-grid-4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scene-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scene-card{padding:12px;border-radius:8px;background:#fff;border:1px solid #e8e8e8;text-align:center}
+.scene-card.open{border-color:#00b894;background:rgba(0,184,148,0.04)}
+.scene-card.closed{border-color:#d63031;background:rgba(214,48,49,0.04)}
+.scene-card .name{font-size:13px;font-weight:600;margin-bottom:6px}
+.scene-card .data{font-size:12px;color:#636e72}
+.scene-card .status{font-size:16px;margin-bottom:4px}
+
+/* 三力卡片 */
+.force-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.force-card{border-radius:10px;border:1px solid #e8e8e8;padding:20px;position:relative;overflow:hidden}
+.force-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.force-card.product::before{background:#e17055}
+.force-card.content::before{background:#0984e3}
+.force-card.operation::before{background:#00b894}
+.force-card .force-header{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.force-card .force-header.product{color:#e17055}
+.force-card .force-header.content{color:#0984e3}
+.force-card .force-header.operation{color:#00b894}
+.force-metric{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.force-metric .label{color:#636e72}
+.force-metric .val{font-weight:600;color:#2d3436}
+.force-tips{margin-top:12px;padding-top:12px;border-top:1px dashed #e0e0e0}
+.force-tips .tip{font-size:12px;color:#636e72;padding:4px 0;display:flex;align-items:center;gap:6px}
+.force-tips .tip::before{content:'→';color:#00b894;font-weight:700}
+
+/* 诊断框 */
+.diagnosis-box{background:rgba(0,184,148,0.06);border:1px solid rgba(0,184,148,0.2);border-radius:10px;padding:16px;margin-top:16px}
+.diagnosis-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px}
+.diagnosis-item .icon{font-size:16px;flex-shrink:0}
+
+/* 洞察框 */
+.insight-box{background:linear-gradient(135deg,rgba(9,132,227,0.06),rgba(116,185,255,0.06));border:1px solid rgba(9,132,227,0.2);border-radius:10px;padding:16px;margin-top:16px;font-size:13px;color:#0984e3}
+
+/* 行动清单 */
+.action-list{margin-top:8px}
+.action-phase{margin-bottom:16px}
+.action-phase-title{font-size:14px;font-weight:700;color:#2d3436;margin-bottom:8px;padding-left:4px;border-left:3px solid #00b894}
+.action-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:#2d3436}
+.action-item input[type=checkbox]{margin-top:3px;accent-color:#00b894}
+
+/* 三率分析 */
+.three-rate-section{background:#fff;border-radius:14px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #e17055}
+.rate-comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px}
+.rate-card{border-radius:10px;padding:20px;border:1px solid #e8e8e8;text-align:center}
+.rate-card .rate-name{font-size:14px;font-weight:600;color:#636e72;margin-bottom:8px}
+.rate-card .rate-val{font-size:28px;font-weight:700;margin-bottom:4px}
+.rate-card .rate-val.good{color:#00b894}
+.rate-card .rate-val.bad{color:#d63031}
+.rate-card .rate-benchmark{font-size:12px;color:#b2bec3}
+.rate-gap{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-top:4px}
+.rate-gap.good{background:rgba(0,184,148,0.1);color:#00b894}
+.rate-gap.bad{background:rgba(214,48,49,0.1);color:#d63031}
+
+/* 分账户表格 */
+.acct-table{font-size:12px}
+.acct-table th{font-size:11px;padding:8px 10px}
+.acct-table td{padding:8px 10px;font-size:12px}
+.smart-high{color:#00b894;font-weight:600}
+.smart-mid{color:#e17055;font-weight:600}
+.smart-low{color:#d63031;font-weight:600}
+
+/* Plotly图表容器 */
+.chart-container{margin:16px 0}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ==================== 大表头 ==================== -->
+<div class="stage-card">
+  <div class="stage-name">尚恰</div>
+  <div class="stage-subtitle">主体：义乌市欢趣食品有限公司、义乌市案界贸易有限公司 | 投放勤奋度诊断报告</div>
+  <div class="stage-badges">
+    <span class="stage-badge l1">✦ L1 拼概率</span>
+    <span class="stage-badge l2" style="opacity:0.4">L2 拼投放力</span>
+    <span class="stage-badge l3" style="opacity:0.4">L3 拼三力</span>
+  </div>
+  <div class="stage-metrics">
+    <div class="stage-metric"><div class="val">75%</div><div class="label">基建达标率</div></div>
+    <div class="stage-metric"><div class="val">1.92万</div><div class="label">日均消耗</div></div>
+    <div class="stage-metric"><div class="val">61.6%</div><div class="label">智投占比</div></div>
+    <div class="stage-metric"><div class="val">4.08</div><div class="label">整体ROI</div></div>
+  </div>
+  <div class="stage-conclusion">⚠️ 基建绝对值未达标——先补量，再谈结构（日均消耗1.92万，未达腰部中位数4.92万）</div>
+</div>
+
+<!-- ==================== 行动清单 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon l1">📋</div>
+    <div class="section-title">行动清单</div>
+    <span class="section-tag l1">L1阶段</span>
+  </div>
+  <div class="action-list">
+    <div class="action-phase">
+      <div class="action-phase-title">第1-2周：补消耗量级 + 1:1复制策略</div>
+      <div class="action-item"><input type="checkbox"> 提升日均消耗至腰部中位数4.92万以上——当前1.92万，差距3万/天，需加大预算投入</div>
+      <div class="action-item"><input type="checkbox"> 执行1:1复制策略——智投和非智投全面复制，用上所有投放能力，增加参竞覆盖</div>
+      <div class="action-item"><input type="checkbox"> 开全场景：当前全店托管(推多品/推全店)❌未开，需优先补建全店托管场景</div>
+      <div class="action-item"><input type="checkbox"> 开小店广告双链路(直购+直播)——当前小店广告❌未开，需尽快开通</div>
+    </div>
+    <div class="action-phase">
+      <div class="action-phase-title">第3-4周：结构优化 + 三率治理</div>
+      <div class="action-item"><input type="checkbox"> 提升智投占比至70%以上（当前61.6%，距北极星指标差8.4pp）</div>
+      <div class="action-item"><input type="checkbox"> 提小店广告占比至30%——当前0%，需从0到1搭建小店广告投放</div>
+      <div class="action-item"><input type="checkbox"> 重点治理差评率——当前14.87%，远超食品饮料大盘10.73%，需从选品和品控入手改善</div>
+      <div class="action-item"><input type="checkbox"> 🛒 暂停/减少天子乐奶油味夏威夷果投放（差评率40.30%，消耗3.2万）</div>
+      <div class="action-item"><input type="checkbox"> 🛒 减少五香味带皮花生、混合坚果、五香味花生仁、奶油味夏威夷果、花生等5个高差评SPU投放，优先改善商品质量</div>
+      <div class="action-item"><input type="checkbox"> 🛒 加大腰果(ROI 7.87)和盐焗味紫皮腰果(ROI 7.97)投放——标杆SPU，差评率低+ROI高</div>
+      <div class="action-item"><input type="checkbox"> 🛒 全部SPU报名618补贴——当前仅7个有补贴，有补贴ROI(4.88)是无补贴(2.29)的2.1倍</div>
+      <div class="action-item"><input type="checkbox"> 拓展版位覆盖——当前视频号占比77.4%（大盘34.4%），需增加朋友圈、PCAD等版位投放</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== L1 拼概率 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon l1">📊</div>
+    <div class="section-title">L1 拼概率（卷勤奋·卷基建）</div>
+    <span class="section-tag l1">基建达标率 75%</span>
+  </div>
+
+  <!-- 1.1 消耗趋势 -->
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:#0984e3">1.1 消耗趋势（近30天）</h3>
+  <div class="chart-container" id="chart_cost_trend" style="height:320px"></div>
+
+  <!-- 1.2 基建分层对标 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#0984e3">1.2 基建分层对标（食饮大盘标准版·腰部）</h3>
+  <table>
+    <thead><tr><th>指标</th><th>尚恰实际值</th><th>腰部中位数</th><th>达标判定</th><th>差距</th></tr></thead>
+    <tbody>
+      <tr><td>账户数</td><td style="font-weight:600">39</td><td>4.0</td><td style="color:#00b894;font-weight:600">✅ 达标</td><td>+35</td></tr>
+      <tr><td>项目/广告数</td><td style="font-weight:600">696</td><td>43.5</td><td style="color:#00b894;font-weight:600">✅ 达标</td><td>+652.5</td></tr>
+      <tr><td>素材数(去重)</td><td style="font-weight:600">10,414</td><td>536</td><td style="color:#00b894;font-weight:600">✅ 达标</td><td>+9,878</td></tr>
+      <tr><td>日均消耗(万)</td><td style="font-weight:600;color:#d63031">1.92</td><td>4.92</td><td style="color:#d63031;font-weight:600">❌ 未达标</td><td>-3.00万</td></tr>
+    </tbody>
+  </table>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>日均消耗1.92万，未达腰部中位数4.92万——账户数、项目数、素材数均已远超腰部标准，但消耗量级不足，说明<b>基建投入充足但转化效率有待提升</b></span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>建议：在维持现有基建规模的基础上，加大预算投入，提升单项目/单素材的消耗产出效率</span></div>
+  </div>
+
+  <!-- 1.3 素材基建 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#0984e3">1.3 素材基建（近30天去重素材数趋势）</h3>
+  <div class="chart-container" id="chart_material_trend" style="height:280px"></div>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">📈</span><span>素材数从698持续增长至1,698，增幅143%——素材基建投入积极，处于"堆量"阶段</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>建议：在持续增量的同时关注素材提质，提升单素材消耗产出效率</span></div>
+  </div>
+</div>
+
+<!-- ==================== L2 拼投放力 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon l2">⚡</div>
+    <div class="section-title">L2 拼投放力（卷智能投放·工具平权）</div>
+    <span class="section-tag l2">智投占比 61.6%</span>
+  </div>
+
+  <!-- 2.1 投流结构 -->
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:#00b894">2.1 投流结构：理想 vs 实际</h3>
+  <div class="chart-container" id="chart_structure" style="height:280px"></div>
+  <table style="margin-top:16px">
+    <thead><tr><th>模块</th><th>子项</th><th>内部占比</th><th>理想总占比</th><th>实际内部占比</th><th>实际总占比</th><th>Gap</th></tr></thead>
+    <tbody>
+      <tr><td>ADQ(理想70%)</td><td>智投</td><td>70%</td><td>49%</td><td>61.6%</td><td>61.6%</td><td style="color:#00b894">+12.6pp</td></tr>
+      <tr><td>ADQ(理想70%)</td><td>非智投</td><td>30%</td><td>21%</td><td>38.4%</td><td>38.4%</td><td style="color:#d63031">+17.4pp</td></tr>
+      <tr><td>ADQ小计</td><td>-</td><td>100%</td><td>70%</td><td>-</td><td>100%</td><td style="color:#d63031">+30pp</td></tr>
+      <tr><td>小店广告(理想30%)</td><td>-</td><td>-</td><td>30%</td><td>-</td><td>0%</td><td style="color:#d63031">-30pp</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:12px;color:#636e72">📌 北极星指标：ADQ内部智投占比≥70% | 当前：61.6%（差8.4pp）</div>
+
+  <!-- 1:1复制基建对比 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#00b894">1:1复制基建对比</h3>
+  <table>
+    <thead><tr><th>链路</th><th>智投项目数</th><th>非智投项目数</th><th>1:1达成</th><th>差距</th></tr></thead>
+    <tbody>
+      <tr><td>直播链路</td><td>210</td><td>176</td><td style="color:#00b894">✅</td><td>+34</td></tr>
+      <tr><td>小店链路</td><td>201</td><td>172</td><td style="color:#00b894">✅</td><td>+29</td></tr>
+      <tr><td>合计</td><td>411</td><td>373</td><td style="color:#00b894">✅</td><td>+38</td></tr>
+    </tbody>
+  </table>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">✅</span><span>智投和非智投基建基本均衡，智投项目数略多于非智投，符合"均衡+智投优先"方向</span></div>
+  </div>
+
+  <!-- 2.3 双开状态 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#00b894">2.3 双开状态</h3>
+  <table>
+    <thead><tr><th>状态</th><th>条件</th><th>判定</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr><td>纯ADQ</td><td>ADQ占比100%，小店广告0%</td><td style="color:#d63031;font-weight:600">⚠️ 纯ADQ</td><td>增投小店广告，开直购+直播双链路</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 2.4 智投场景分布 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#00b894">2.4 智投场景分布</h3>
+  <div class="scene-wrapper">
+    <div class="scene-platform adq">
+      <div class="scene-platform-title">🔵 ADQ平台</div>
+      <div class="scene-grid-4">
+        <div class="scene-card open">
+          <div class="status">✅</div>
+          <div class="name">单链路·推直播</div>
+          <div class="data">12.5万 · ROI 4.94</div>
+        </div>
+        <div class="scene-card open">
+          <div class="status">✅</div>
+          <div class="name">单链路·推直购</div>
+          <div class="data">11.7万 · ROI 2.21</div>
+        </div>
+        <div class="scene-card closed">
+          <div class="status">❌</div>
+          <div class="name">全店托管</div>
+          <div class="data">未开</div>
+        </div>
+        <div class="scene-card open">
+          <div class="status">✅</div>
+          <div class="name">短直双开</div>
+          <div class="data">11.2万 · ROI 4.91</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#636e72">短直双开拆分：直播 9.1万(ROI 4.70) · 小店 2.2万(ROI 5.75)</div>
+    </div>
+    <div class="scene-platform wxshop">
+      <div class="scene-platform-title">🟢 小店广告平台</div>
+      <div class="scene-grid-2">
+        <div class="scene-card closed">
+          <div class="status">❌</div>
+          <div class="name">小店广告·直购</div>
+          <div class="data">未开</div>
+        </div>
+        <div class="scene-card closed">
+          <div class="status">❌</div>
+          <div class="name">小店广告·直播</div>
+          <div class="data">未开</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>全店托管❌未开——缺少推多品/推全店场景，智投覆盖不完整</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>小店广告❌完全未开——缺少直购+直播双链路，ADQ占比100%，需尽快开通</span></div>
+    <div class="diagnosis-item"><span class="icon">✅</span><span>分链路智投覆盖：直播链路智投覆盖率 73.9% · 小店链路智投覆盖率 50.8%</span></div>
+  </div>
+
+  <!-- 2.5 分账户结构诊断 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#00b894">2.5 分账户结构诊断</h3>
+  <p style="font-size:12px;color:#636e72;margin-bottom:8px">共39个账户（欢趣32个 + 案界7个），按行动项聚合展示</p>
+  <table class="acct-table">
+    <thead><tr><th>行动项</th><th>账户数</th><th>总消耗(万)</th><th>代表账户</th><th>缺失场景</th></tr></thead>
+    <tbody>
+      <tr>
+        <td style="color:#d63031;font-weight:600">纯非智投·需迁移至智投</td>
+        <td>7</td>
+        <td>0.5</td>
+        <td>81600200、81600215、81600166等(案界)</td>
+        <td>单链路❌ 短直双开❌</td>
+      </tr>
+      <tr>
+        <td style="color:#e17055;font-weight:600">手动为主·智投占比低(&lt;30%)</td>
+        <td>5</td>
+        <td>3.5</td>
+        <td>82260577、82260534、82260559等</td>
+        <td>短直双开❌</td>
+      </tr>
+      <tr>
+        <td style="color:#f39c12;font-weight:600">智投+手动混合·需提升智投</td>
+        <td>10</td>
+        <td>24.0</td>
+        <td>73109113、80411509、80411520等</td>
+        <td>短直双开❌</td>
+      </tr>
+      <tr>
+        <td style="color:#00b894;font-weight:600">智投为主·标杆账户</td>
+        <td>10</td>
+        <td>28.5</td>
+        <td>80411524、82260507、66950105等</td>
+        <td>无（已开多场景）</td>
+      </tr>
+      <tr>
+        <td style="color:#636e72;font-weight:600">消耗极低账户</td>
+        <td>7</td>
+        <td>0.2</td>
+        <td>73109114、73109115、80411513等</td>
+        <td>短直双开❌</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>案界贸易7个账户全部为纯非智投，消耗极低(合计约0.05万)，需迁移至智投或合并至欢趣主体统一管理</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>15个账户(占38%)智投占比不足30%，需加速向智投迁移</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>全店托管场景所有账户均未开，需优先在头部账户(80411524等)试点</span></div>
+  </div>
+</div>
+
+<!-- ==================== L3 拼三力 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon l3">🏆</div>
+    <div class="section-title">L3 拼三力（卷资源·围绕"人"打透）</div>
+    <span class="section-tag l3">参考分析</span>
+  </div>
+
+  <div class="force-grid">
+    <!-- 商品力 -->
+    <div class="force-card product">
+      <div class="force-header product">🛒 商品力</div>
+      <div class="force-metric"><span class="label">在投SPU数</span><span class="val">16个</span></div>
+      <div class="force-metric"><span class="label">有补贴SPU</span><span class="val">7个</span></div>
+      <div class="force-metric"><span class="label">补贴覆盖率</span><span class="val" style="color:#e17055">30.8%</span></div>
+      <div class="force-metric"><span class="label">差评率高风险SPU</span><span class="val" style="color:#d63031">5个</span></div>
+      <div class="force-tips">
+        <div class="tip">5个SPU差评率>20%，需重点治理</div>
+        <div class="tip">腰果/盐焗腰果为标杆，复制至其他SPU</div>
+      </div>
+    </div>
+    <!-- 内容力 -->
+    <div class="force-card content">
+      <div class="force-header content">🎨 内容力</div>
+      <div class="force-metric"><span class="label">去重素材数</span><span class="val">10,414</span></div>
+      <div class="force-metric"><span class="label">整体CTR</span><span class="val">5.38%</span></div>
+      <div class="force-metric"><span class="label">智投ROI</span><span class="val">4.08</span></div>
+      <div class="force-metric"><span class="label">版位集中度</span><span class="val" style="color:#d63031">77.4%(视频号)</span></div>
+      <div class="force-tips">
+        <div class="tip">版位拓展至朋友圈/PCAD</div>
+        <div class="tip">丰富创意规格(九图/大图等)</div>
+      </div>
+    </div>
+    <!-- 经营力 -->
+    <div class="force-card operation">
+      <div class="force-header operation">💰 经营力</div>
+      <div class="force-metric"><span class="label">大场CVR</span><span class="val">8.26%</span></div>
+      <div class="force-metric"><span class="label">非大场CVR</span><span class="val">9.26%</span></div>
+      <div class="force-metric"><span class="label">分销消耗</span><span class="val" style="color:#e17055">1.0万</span></div>
+      <div class="force-metric"><span class="label">分销ROI</span><span class="val" style="color:#d63031">0.0</span></div>
+      <div class="force-tips">
+        <div class="tip">大场CVR低于非大场，优化货品组合</div>
+        <div class="tip">分销ROI为0，需调整分销策略</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.1 SPU明细 - 全量在投商品 -->
+  <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:#f39c12">3.1 商品力 — SPU级别明细（近30天）</h3>
+  <p style="font-size:12px;color:#636e72;margin-bottom:8px">按消耗降序排列，仅展示消耗>100元的SPU</p>
+  <table>
+    <thead><tr><th style="width:22%">SPU名称</th><th>消耗(万)</th><th>下单ROI</th><th>客单价(元)</th><th>差评率</th><th>品退率</th><th>差评风险</th></tr></thead>
+    <tbody>
+      <tr><td>尚恰五香味带皮花生</td><td style="font-weight:600">16.0</td><td style="color:#e17055">2.23</td><td>35.82</td><td style="color:#d63031;font-weight:600">22.90%</td><td>0.055%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>尚恰腰果</td><td style="font-weight:600">11.1</td><td style="color:#00b894;font-weight:600">7.87</td><td>65.01</td><td style="color:#00b894">9.21%</td><td>0.032%</td><td style="background:rgba(0,184,148,0.1);color:#00b894;font-weight:600;border-radius:4px;padding:2px 6px">🟢低风险</td></tr>
+      <tr><td>尚恰核桃</td><td style="font-weight:600">9.2</td><td>3.06</td><td>37.74</td><td style="color:#e17055">12.33%</td><td>0.000%</td><td style="background:rgba(243,156,18,0.1);color:#e17055;font-weight:600;border-radius:4px;padding:2px 6px">🟡中风险</td></tr>
+      <tr><td>尚恰混合口味混合坚果</td><td style="font-weight:600">8.2</td><td style="color:#e17055">2.04</td><td>36.65</td><td style="color:#d63031;font-weight:600">23.17%</td><td>0.011%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>天子乐奶油味夏威夷果</td><td style="font-weight:600">3.2</td><td style="color:#e17055">2.04</td><td>27.44</td><td style="color:#d63031;font-weight:600">40.30%</td><td>0.063%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>尚恰五香味花生仁</td><td>3.0</td><td style="color:#e17055">1.99</td><td>33.06</td><td style="color:#d63031;font-weight:600">28.26%</td><td>0.000%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>尚恰盐焗味紫皮腰果</td><td>2.8</td><td style="color:#00b894;font-weight:600">7.97</td><td>45.71</td><td style="color:#00b894">6.95%</td><td>0.011%</td><td style="background:rgba(0,184,148,0.1);color:#00b894;font-weight:600;border-radius:4px;padding:2px 6px">🟢低风险</td></tr>
+      <tr><td>尚恰奶油味夏威夷果</td><td>1.5</td><td style="color:#e17055">1.88</td><td>36.58</td><td style="color:#d63031;font-weight:600">27.94%</td><td>0.174%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>尚恰花生</td><td>1.2</td><td>2.27</td><td>34.42</td><td style="color:#d63031">21.05%</td><td>0.064%</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 6px">🔴高风险</td></tr>
+      <tr><td>尚恰原味夏威夷果</td><td>0.2</td><td>1.92</td><td>60.72</td><td style="color:#00b894">0.00%</td><td style="color:#e17055">3.390%</td><td style="background:rgba(0,184,148,0.1);color:#00b894;font-weight:600;border-radius:4px;padding:2px 6px">🟢低风险</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SPU差评率风险图 -->
+  <div class="chart-container" id="chart_spu_risk" style="height:320px;margin-top:16px"></div>
+
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">🔴</span><span><b>5个SPU差评率超过20%</b>：五香味带皮花生(22.90%)、混合坚果(23.17%)、天子乐夏威夷果(40.30%)、五香味花生仁(28.26%)、奶油味夏威夷果(27.94%)、花生(21.05%)——这些SPU消耗合计32.9万(占57%)，差评率远超大盘10.73%</span></div>
+    <div class="diagnosis-item"><span class="icon">🟢</span><span><b>2个标杆SPU</b>：腰果(差评率9.21%, ROI 7.87)和盐焗味紫皮腰果(差评率6.95%, ROI 7.97)——差评率低于大盘且ROI优秀，应作为主力推广商品</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>天子乐奶油味夏威夷果差评率高达40.30%——建议暂停或大幅减少该SPU的广告投放，优先改善商品质量/描述</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>高差评SPU多为花生类和夏威夷果类，建议从选品、包装、物流、详情页描述等环节系统性改善</span></div>
+  </div>
+
+  <!-- 3.1b 618补贴品SPU明细 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#f39c12">3.1b 618补贴品 — SPU级别拆解（5月18日起）</h3>
+
+  <!-- 有补贴SPU -->
+  <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;color:#00b894">✅ 有补贴标签的SPU（7个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">SPU名称</th><th>补贴类型</th><th>消耗(万)</th><th>下单ROI</th><th>客单价(元)</th></tr></thead>
+    <tbody>
+      <tr><td>尚恰五香味带皮花生</td><td>平台满减券（B类）</td><td>4.3</td><td>2.19</td><td>35.06</td></tr>
+      <tr><td>尚恰腰果</td><td>平台满减券（B类）</td><td>3.9</td><td style="color:#00b894;font-weight:600">9.75</td><td>67.70</td></tr>
+      <tr><td>尚恰核桃</td><td>平台满减券（B类）</td><td>3.8</td><td>3.40</td><td>37.88</td></tr>
+      <tr><td>尚恰混合口味混合坚果</td><td>平台满减券（B类）</td><td>2.6</td><td>2.04</td><td>37.58</td></tr>
+      <tr style="background:rgba(0,184,148,0.04)"><td>尚恰盐焗味紫皮腰果</td><td><b>平台满减券（B类）+官方补贴</b></td><td>2.1</td><td style="color:#00b894;font-weight:600">8.29</td><td>45.55</td></tr>
+      <tr><td>尚恰花生</td><td>平台满减券（B类）</td><td>0.5</td><td>2.29</td><td>34.09</td></tr>
+      <tr><td style="color:#b2bec3">尚恰混合坚果</td><td>平台满减券（B类）</td><td style="color:#b2bec3">0.0</td><td>-</td><td>63.93</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 无补贴SPU -->
+  <h4 style="font-size:14px;font-weight:600;margin:12px 0 8px;color:#d63031">❌ 无补贴标签的SPU（9个有消耗）</h4>
+  <table>
+    <thead><tr><th style="width:22%">SPU名称</th><th>消耗(万)</th><th>下单ROI</th><th>客单价(元)</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr style="background:rgba(214,48,49,0.04)"><td>尚恰五香味带皮花生</td><td style="font-weight:600">11.5</td><td>2.24</td><td>36.17</td><td style="color:#d63031">差评率22.90%，需治理</td></tr>
+      <tr style="background:rgba(214,48,49,0.04)"><td>天子乐奶油味夏威夷果</td><td style="font-weight:600">3.2</td><td>2.04</td><td>27.44</td><td style="color:#d63031">差评率40.30%，建议暂停投放</td></tr>
+      <tr><td>尚恰核桃</td><td>0.9</td><td>3.18</td><td>38.83</td><td>建议报名补贴</td></tr>
+      <tr><td>尚恰混合口味混合坚果</td><td>0.8</td><td>2.00</td><td>38.50</td><td>建议报名补贴</td></tr>
+      <tr><td>尚恰花生</td><td>0.7</td><td>2.26</td><td>34.66</td><td>建议报名补贴</td></tr>
+      <tr><td>尚恰腰果</td><td>0.4</td><td>4.34</td><td>68.54</td><td>建议报名补贴</td></tr>
+      <tr><td>尚恰原味夏威夷果</td><td>0.2</td><td>1.92</td><td>60.72</td><td>品退率3.39%偏高，需关注</td></tr>
+      <tr><td>尚恰五香味花生仁</td><td>0.1</td><td>2.42</td><td>33.57</td><td style="color:#d63031">差评率28.26%，需治理</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 有补贴 vs 无补贴 效果对比 -->
+  <h4 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#0984e3">📊 有补贴 vs 无补贴 整体效果对比</h4>
+  <table>
+    <thead><tr><th>维度</th><th>有补贴</th><th>无补贴</th><th>差异</th></tr></thead>
+    <tbody>
+      <tr><td>消耗(万)</td><td>17.1</td><td>17.7</td><td>-0.6</td></tr>
+      <tr><td>下单ROI</td><td style="color:#00b894;font-weight:600">4.88</td><td style="color:#e17055">2.29</td><td style="color:#00b894">+2.59 (113%↑)</td></tr>
+      <tr><td>客单价(元)</td><td style="color:#00b894;font-weight:600">48.68</td><td>35.42</td><td style="color:#00b894">+13.26</td></tr>
+    </tbody>
+  </table>
+
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">✅</span><span><b>补贴加持效果显著</b>：有补贴SPU下单ROI 4.88，是无补贴(2.29)的2.1倍；客单价48.68元 vs 35.42元，高出37%</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>尚恰盐焗味紫皮腰果同时享受"平台满减券+官方补贴"双重加持，ROI高达8.29——建议其他SPU也积极报名官方补贴，提升补贴力度</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>无补贴侧五香味带皮花生消耗11.5万(差评率22.90%)和天子乐夏威夷果3.2万(差评率40.30%)——这两个SPU消耗大但差评率高且无补贴，建议：①暂停或减少投放 ②优先改善商品质量 ③改善后再报名补贴</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>核桃、混合坚果、花生等SPU在无补贴侧仍有消耗，建议全部报名618补贴活动，提升ROI</span></div>
+  </div>
+
+  <!-- 3.2 内容力 - 二级流量分布对比图 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#f39c12">3.2 内容力 - 二级流量分布对比</h3>
+  <div class="chart-container" id="chart_flow_compare" style="height:350px"></div>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>当前消耗高度集中在视频号(77.4%)，远超食品饮料大盘(34.4%)</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>平台与内容广告(PCAD)仅1.0%，大盘30.3%——差距29.3pp，版位覆盖严重不足</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>朋友圈仅0.1%，大盘11.1%——差距11pp</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>建议增加不同创意规格的投入（如九图、大图、横版图片、横版视频等），主动追加朋友圈、PCAD、公众号等版位的占比，提升流量覆盖面</span></div>
+  </div>
+
+  <!-- 3.3 经营力 -->
+  <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#f39c12">3.3 经营力 - 大场vs非大场 + 分销vs自营</h3>
+  <table>
+    <thead><tr><th>维度</th><th>消耗(万)</th><th>CTR</th><th>CVR</th><th>ROI</th></tr></thead>
+    <tbody>
+      <tr><td>大场</td><td>13.2</td><td>6.49%</td><td>8.26%</td><td>-</td></tr>
+      <tr><td>非大场</td><td>16.0</td><td>6.48%</td><td>9.26%</td><td>-</td></tr>
+      <tr style="border-top:2px solid #e0e0e0"><td>分销(777)</td><td>1.0</td><td>1.04%</td><td>-</td><td style="color:#d63031">0.0</td></tr>
+      <tr><td>自营(非777)</td><td>56.4</td><td>5.41%</td><td>9.51%</td><td>4.08</td></tr>
+    </tbody>
+  </table>
+  <div class="diagnosis-box">
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>大场CVR(8.26%)低于非大场(9.26%)——大场转化效率待提升，需优化货品组合和直播内容</span></div>
+    <div class="diagnosis-item"><span class="icon">⚠️</span><span>分销ROI为0——分销渠道尚未跑通，需调整分销商品选择和佣金策略</span></div>
+  </div>
+</div>
+
+<!-- ==================== 三率分析 ==================== -->
+<div class="three-rate-section">
+  <div class="section-header" style="border-bottom:2px solid #f0f0f0;padding-bottom:16px;margin-bottom:20px">
+    <div class="section-icon" style="background:#e17055">🔍</div>
+    <div class="section-title">小店"三率"分析 — 尚恰 vs 食品饮料大盘</div>
+    <span class="section-tag" style="background:#e17055">专项分析</span>
+  </div>
+  <p style="font-size:13px;color:#636e72;margin-bottom:16px">"三率"是衡量小店商品质量和用户满意度的核心指标，直接影响广告投放的流量获取能力和平台治理策略。差评率和品退率过高将触发柔性打击策略，导致广告曝光受限。</p>
+
+  <div class="rate-comparison">
+    <!-- 差评率 -->
+    <div class="rate-card">
+      <div class="rate-name">差评率（小店订单14日内）</div>
+      <div class="rate-val bad">14.87%</div>
+      <div class="rate-benchmark">食品饮料大盘均值：10.73%</div>
+      <div class="rate-gap bad">⚠️ 高于大盘 +4.14pp</div>
+      <div style="margin-top:12px">
+        <div class="chart-container" id="chart_bad_eval" style="height:200px"></div>
+      </div>
+    </div>
+    <!-- 品退率 -->
+    <div class="rate-card">
+      <div class="rate-name">品质退款率（小店订单14日内）</div>
+      <div class="rate-val good">0.034%</div>
+      <div class="rate-benchmark">食品饮料大盘均值：0.056%</div>
+      <div class="rate-gap good">✅ 优于大盘 -0.022pp</div>
+      <div style="margin-top:12px">
+        <div class="chart-container" id="chart_quality_refund" style="height:200px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagnosis-box" style="margin-top:20px">
+    <div class="diagnosis-item"><span class="icon">🔴</span><span><b>差评率14.87%，高于食品饮料大盘10.73%（+4.14pp）</b>——这是当前最需关注的风险指标。差评率过高将触发小店柔性打击策略，导致广告曝光受限、流量获取成本上升</span></div>
+    <div class="diagnosis-item"><span class="icon">🟢</span><span>品退率0.034%，优于大盘0.056%——商品品质退款控制良好，说明商品实物质量基本达标</span></div>
+    <div class="diagnosis-item"><span class="icon">💡</span><span>差评率高但品退率低，说明问题可能出在<b>用户预期管理</b>而非商品质量本身——建议从以下方面改善：</span></div>
+    <div class="diagnosis-item"><span class="icon">1️⃣</span><span>优化商品详情页描述，避免过度宣传导致用户预期偏差</span></div>
+    <div class="diagnosis-item"><span class="icon">2️⃣</span><span>加强客服售后响应，在差评形成前主动解决用户问题</span></div>
+    <div class="diagnosis-item"><span class="icon">3️⃣</span><span>筛选差评率高的商品，暂停或减少广告投放，优先推广好评率高的商品</span></div>
+    <div class="diagnosis-item"><span class="icon">4️⃣</span><span>关注店铺差评率对比类目大盘倍率，若倍率≥2倍将直接被标记为"差评率异常店铺"，进入治理名单</span></div>
+  </div>
+
+  <table style="margin-top:16px">
+    <thead><tr><th>指标</th><th>尚恰</th><th>食品饮料大盘</th><th>差距</th><th>风险等级</th></tr></thead>
+    <tbody>
+      <tr><td>差评率</td><td style="font-weight:600;color:#d63031">14.87%</td><td>10.73%</td><td style="color:#d63031">+4.14pp</td><td style="background:rgba(214,48,49,0.1);color:#d63031;font-weight:600;border-radius:4px;padding:2px 8px">高风险</td></tr>
+      <tr><td>品退率</td><td style="font-weight:600;color:#00b894">0.034%</td><td>0.056%</td><td style="color:#00b894">-0.022pp</td><td style="background:rgba(0,184,148,0.1);color:#00b894;font-weight:600;border-radius:4px;padding:2px 8px">低风险</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- ==================== Plotly 图表脚本 ==================== -->
+<script>
+// 1.1 消耗趋势堆叠面积图
+(function(){
+  var dates = ["05/04","05/05","05/06","05/07","05/08","05/09","05/10","05/11","05/12","05/13","05/14","05/15","05/16","05/17","05/18","05/19","05/20","05/21","05/22","05/23","05/24","05/25","05/26","05/27","05/28","05/29","05/30","05/31","06/01","06/02"];
+  var nonSmart = [136.10,304.41,1465.59,2144.76,7306.22,3598.25,4997.75,6600.19,12460.50,5193.77,20433.43,8179.36,8731.89,9908.21,12260.08,7474.86,10978.38,6092.91,6296.70,24189.51,14823.10,6477.35,7795.34,6206.88,6148.23,2401.73,2503.59,3125.69,6855.86,5393.94];
+  var singleLink = [2753.49,1984.86,1716.92,3537.49,8623.69,6106.58,11812.79,6387.65,5614.94,5263.77,8079.74,15673.04,13989.50,4788.41,4585.90,5359.95,18370.94,14506.23,11472.36,5161.81,8641.86,13997.22,15017.23,23126.79,14675.56,1466.71,1383.90,2329.16,1628.62,3570.36];
+  var shortDouble = [1580.57,2225.66,2027.07,1823.31,2729.16,1308.55,1238.00,2908.26,3569.90,1410.54,2220.32,3870.23,2566.52,9209.48,2124.49,2068.58,1838.23,1741.93,1611.22,1395.48,4356.74,4618.13,8074.68,20617.27,17192.35,767.76,840.73,1116.14,1273.43,4077.86];
+
+  var trace1 = {x:dates,y:nonSmart,name:'非智投',type:'scatter',mode:'lines',stackgroup:'one',fillcolor:'rgba(99,110,114,0.4)',line:{color:'#636e72',width:1.5}};
+  var trace2 = {x:dates,y:singleLink,name:'单链路智投',type:'scatter',mode:'lines',stackgroup:'one',fillcolor:'rgba(9,132,227,0.4)',line:{color:'#0984e3',width:1.5}};
+  var trace3 = {x:dates,y:shortDouble,name:'短直双开',type:'scatter',mode:'lines',stackgroup:'one',fillcolor:'rgba(0,184,148,0.4)',line:{color:'#00b894',width:1.5}};
+
+  var layout = {
+    margin:{t:30,r:30,b:40,l:60},
+    xaxis:{title:'',tickfont:{size:10},tickangle:-45},
+    yaxis:{title:'消耗(元)',titlefont:{size:11},tickfont:{size:10},rangemode:'tozero'},
+    legend:{orientation:'h',x:0.5,y:1.12,xanchor:'center',font:{size:11}},
+    hovermode:'x unified',
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc'
+  };
+  Plotly.newPlot('chart_cost_trend',[trace2,trace3,trace1],layout,{responsive:true});
+})();
+
+// 1.3 素材趋势柱状图
+(function(){
+  var dates = ["05/04","05/05","05/06","05/07","05/08","05/09","05/10","05/11","05/12","05/13","05/14","05/15","05/16","05/17","05/18","05/19","05/20","05/21","05/22","05/23","05/24","05/25","05/26","05/27","05/28","05/29","05/30","05/31","06/01","06/02"];
+  var materials = [698,729,785,845,939,964,989,1033,1050,1061,1075,1094,1100,1113,1133,1151,1159,1165,1181,1190,1253,1288,1357,1359,1462,1498,1508,1541,1649,1698];
+
+  var trace = {x:dates,y:materials,type:'bar',marker:{color:'rgba(9,132,227,0.7)',line:{color:'#0984e3',width:1}}};
+  var layout = {
+    margin:{t:20,r:30,b:40,l:60},
+    xaxis:{title:'',tickfont:{size:10},tickangle:-45},
+    yaxis:{title:'去重素材数',titlefont:{size:11},tickfont:{size:10}},
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc'
+  };
+  Plotly.newPlot('chart_material_trend',[trace],layout,{responsive:true});
+})();
+
+// 2.1 投流结构大图
+(function(){
+  var cats = ['ADQ·智投','ADQ·非智投','小店广告'];
+  var ideal = [49,21,30];
+  var actual = [61.6,38.4,0];
+
+  var trace1 = {x:cats,y:ideal,name:'理想占比(%)',type:'bar',marker:{color:'rgba(0,184,148,0.6)',line:{color:'#00b894',width:1.5}},width:0.35};
+  var trace2 = {x:cats,y:actual,name:'实际占比(%)',type:'bar',marker:{color:'rgba(9,132,227,0.6)',line:{color:'#0984e3',width:1.5}},width:0.35};
+
+  var layout = {
+    margin:{t:30,r:30,b:40,l:50},
+    barmode:'group',
+    yaxis:{title:'占比(%)',titlefont:{size:11},tickfont:{size:10},rangemode:'tozero'},
+    xaxis:{tickfont:{size:11}},
+    legend:{orientation:'h',x:0.5,y:1.12,xanchor:'center',font:{size:11}},
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc',
+    height:280
+  };
+  Plotly.newPlot('chart_structure',[trace1,trace2],layout,{responsive:true});
+})();
+
+// 3.2 二级流量分布对比图
+(function(){
+  var flows = ['微信视频号','平台与内容广告','微信小程序','微信朋友圈','微信公众号','微信搜一搜','移动联盟','搜索广告'];
+  var client = [77.4,1.0,19.2,0.1,2.1,0.1,0.0,0.0];
+  var industry = [34.4,30.3,11.7,11.1,10.6,0.8,0.6,0.4];
+
+  var trace1 = {x:flows,y:client,name:'尚恰',type:'bar',marker:{color:'rgba(9,132,227,0.7)',line:{color:'#0984e3',width:1}},width:0.35};
+  var trace2 = {x:flows,y:industry,name:'食品饮料大盘',type:'bar',marker:{color:'rgba(243,156,18,0.7)',line:{color:'#f39c12',width:1}},width:0.35};
+
+  var layout = {
+    margin:{t:30,r:30,b:60,l:50},
+    barmode:'group',
+    yaxis:{title:'消耗占比(%)',titlefont:{size:11},tickfont:{size:10}},
+    xaxis:{tickfont:{size:10},tickangle:-30},
+    legend:{orientation:'h',x:0.5,y:1.12,xanchor:'center',font:{size:11}},
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc',
+    height:350
+  };
+  Plotly.newPlot('chart_flow_compare',[trace1,trace2],layout,{responsive:true});
+})();
+
+// SPU差评率风险散点图
+(function(){
+  var spuNames = ['五香味带皮花生','腰果','核桃','混合口味混合坚果','天子乐夏威夷果','五香味花生仁','盐焗味紫皮腰果','奶油味夏威夷果','花生','原味夏威夷果'];
+  var badEvals = [22.90,9.21,12.33,23.17,40.30,28.26,6.95,27.94,21.05,0.00];
+  var costs = [16.0,11.1,9.2,8.2,3.2,3.0,2.8,1.5,1.2,0.2];
+  var rois = [2.23,7.87,3.06,2.04,2.04,1.99,7.97,1.88,2.27,1.92];
+  var colors = badEvals.map(function(v){return v>20?'#d63031':(v>10?'#e17055':'#00b894')});
+
+  var trace = {
+    x:badEvals,y:costs,text:spuNames,mode:'markers+text',
+    marker:{size:costs.map(function(c){return Math.max(c*2.5,8)}),color:colors,opacity:0.7,line:{color:'#fff',width:1}},
+    textposition:'middle right',textfont:{size:10},
+    hovertemplate:'%{text}<br>差评率: %{x:.1f}%<br>消耗: %{y:.1f}万<extra></extra>'
+  };
+
+  var layout = {
+    margin:{t:30,r:30,b:50,l:50},
+    xaxis:{title:'差评率(%)',titlefont:{size:11},tickfont:{size:10},rangemode:'tozero'},
+    yaxis:{title:'消耗(万)',titlefont:{size:11},tickfont:{size:10},rangemode:'tozero'},
+    shapes:[{type:'line',x0:10.73,x1:10.73,y0:0,y1:18,line:{color:'#636e72',width:1,dash:'dash'}}],
+    annotations:[{x:11.5,y:17,text:'大盘差评率 10.73%',showarrow:false,font:{size:9,color:'#636e72'}}],
+    paper_bgcolor:'transparent',plot_bgcolor:'#fafbfc',height:320,
+    legend:{orientation:'h',x:0.5,y:1.12,xanchor:'center',font:{size:11}}
+  };
+  Plotly.newPlot('chart_spu_risk',[trace],layout,{responsive:true});
+})();
+
+// 三率 - 差评率对比
+(function(){
+  var trace = {
+    x:['尚恰','食品饮料大盘'],
+    y:[14.87,10.73],
+    type:'bar',
+    marker:{color:['#d63031','#636e72']},
+    width:0.5
+  };
+  var layout = {
+    margin:{t:10,r:20,b:30,l:40},
+    yaxis:{title:'%',titlefont:{size:10},tickfont:{size:9}},
+    xaxis:{tickfont:{size:10}},
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc',
+    height:200,
+    annotations:[{x:0,y:14.87+0.5,text:'14.87%',showarrow:false,font:{size:11,color:'#d63031',weight:'bold'}},{x:1,y:10.73+0.5,text:'10.73%',showarrow:false,font:{size:11,color:'#636e72'}}]
+  };
+  Plotly.newPlot('chart_bad_eval',[trace],layout,{responsive:true});
+})();
+
+// 三率 - 品退率对比
+(function(){
+  var trace = {
+    x:['尚恰','食品饮料大盘'],
+    y:[0.034,0.056],
+    type:'bar',
+    marker:{color:['#00b894','#636e72']},
+    width:0.5
+  };
+  var layout = {
+    margin:{t:10,r:20,b:30,l:40},
+    yaxis:{title:'%',titlefont:{size:10},tickfont:{size:9}},
+    xaxis:{tickfont:{size:10}},
+    paper_bgcolor:'transparent',
+    plot_bgcolor:'#fafbfc',
+    height:200,
+    annotations:[{x:0,y:0.034+0.002,text:'0.034%',showarrow:false,font:{size:11,color:'#00b894'}},{x:1,y:0.056+0.002,text:'0.056%',showarrow:false,font:{size:11,color:'#636e72'}}]
+  };
+  Plotly.newPlot('chart_quality_refund',[trace],layout,{responsive:true});
+})();
+</script>
+
+<script>(function(){var _h=0,_t;function s(){var h=document.documentElement.scrollHeight;if(h>0&&h!==_h){_h=h;window.parent.postMessage({type:"iframe-resize",height:h},"*")}}function d(){clearTimeout(_t);_t=setTimeout(s,150)}if(document.readyState==="complete")s();else window.addEventListener("load",s);if(typeof ResizeObserver!=="undefined")new ResizeObserver(d).observe(document.documentElement)})();</script></body>
+</html>
