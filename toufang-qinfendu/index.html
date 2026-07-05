@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>尚恰 - 投放勤奋度诊断报告</title>
-<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="./plotly-2.27.0.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'PingFang SC','Microsoft YaHei','WenQuanYi Micro Hei',sans-serif;background:#f5f6fa;color:#2d3436;line-height:1.6}
@@ -93,7 +93,7 @@ tr:hover td{background:#f8f9fa}
 .action-phase{margin-bottom:16px}
 .action-phase-title{font-size:14px;font-weight:700;color:#2d3436;margin-bottom:8px;padding-left:4px;border-left:3px solid #00b894}
 .action-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;color:#2d3436}
-.action-item input[type=checkbox]{margin-top:3px;accent-color:#00b894}
+.action-check{width:13px;height:13px;border:1.5px solid #00b894;border-radius:3px;display:inline-block;flex:0 0 auto;margin-top:2px;background:#fff}
 
 /* 三率分析 */
 .three-rate-section{background:#fff;border-radius:14px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #e17055}
@@ -151,21 +151,21 @@ tr:hover td{background:#f8f9fa}
   <div class="action-list">
     <div class="action-phase">
       <div class="action-phase-title">第1-2周：补消耗量级 + 1:1复制策略</div>
-      <div class="action-item"><input type="checkbox"> 提升日均消耗至腰部中位数4.92万以上——当前1.92万，差距3万/天，需加大预算投入</div>
-      <div class="action-item"><input type="checkbox"> 执行1:1复制策略——智投和非智投全面复制，用上所有投放能力，增加参竞覆盖</div>
-      <div class="action-item"><input type="checkbox"> 开全场景：当前全店托管(推多品/推全店)❌未开，需优先补建全店托管场景</div>
-      <div class="action-item"><input type="checkbox"> 开小店广告双链路(直购+直播)——当前小店广告❌未开，需尽快开通</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 提升日均消耗至腰部中位数4.92万以上——当前1.92万，差距3万/天，需加大预算投入</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 执行1:1复制策略——智投和非智投全面复制，用上所有投放能力，增加参竞覆盖</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 开全场景：当前全店托管(推多品/推全店)❌未开，需优先补建全店托管场景</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 开小店广告双链路(直购+直播)——当前小店广告❌未开，需尽快开通</div>
     </div>
     <div class="action-phase">
       <div class="action-phase-title">第3-4周：结构优化 + 三率治理</div>
-      <div class="action-item"><input type="checkbox"> 提升智投占比至70%以上（当前61.6%，距北极星指标差8.4pp）</div>
-      <div class="action-item"><input type="checkbox"> 提小店广告占比至30%——当前0%，需从0到1搭建小店广告投放</div>
-      <div class="action-item"><input type="checkbox"> 重点治理差评率——当前14.87%，远超食品饮料大盘10.73%，需从选品和品控入手改善</div>
-      <div class="action-item"><input type="checkbox"> 🛒 暂停/减少天子乐奶油味夏威夷果投放（差评率40.30%，消耗3.2万）</div>
-      <div class="action-item"><input type="checkbox"> 🛒 减少五香味带皮花生、混合坚果、五香味花生仁、奶油味夏威夷果、花生等5个高差评SPU投放，优先改善商品质量</div>
-      <div class="action-item"><input type="checkbox"> 🛒 加大腰果(ROI 7.87)和盐焗味紫皮腰果(ROI 7.97)投放——标杆SPU，差评率低+ROI高</div>
-      <div class="action-item"><input type="checkbox"> 🛒 全部SPU报名618补贴——当前仅7个有补贴，有补贴ROI(4.88)是无补贴(2.29)的2.1倍</div>
-      <div class="action-item"><input type="checkbox"> 拓展版位覆盖——当前视频号占比77.4%（大盘34.4%），需增加朋友圈、PCAD等版位投放</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 提升智投占比至70%以上（当前61.6%，距北极星指标差8.4pp）</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 提小店广告占比至30%——当前0%，需从0到1搭建小店广告投放</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 重点治理差评率——当前14.87%，远超食品饮料大盘10.73%，需从选品和品控入手改善</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 🛒 暂停/减少天子乐奶油味夏威夷果投放（差评率40.30%，消耗3.2万）</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 🛒 减少五香味带皮花生、混合坚果、五香味花生仁、奶油味夏威夷果、花生等5个高差评SPU投放，优先改善商品质量</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 🛒 加大腰果(ROI 7.87)和盐焗味紫皮腰果(ROI 7.97)投放——标杆SPU，差评率低+ROI高</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 🛒 全部SPU报名618补贴——当前仅7个有补贴，有补贴ROI(4.88)是无补贴(2.29)的2.1倍</div>
+      <div class="action-item"><span class="action-check" aria-hidden="true"></span> 拓展版位覆盖——当前视频号占比77.4%（大盘34.4%），需增加朋友圈、PCAD等版位投放</div>
     </div>
   </div>
 </div>
@@ -716,5 +716,5 @@ tr:hover td{background:#f8f9fa}
 })();
 </script>
 
-<script>(function(){var _h=0,_t;function s(){var h=document.documentElement.scrollHeight;if(h>0&&h!==_h){_h=h;window.parent.postMessage({type:"iframe-resize",height:h},"*")}}function d(){clearTimeout(_t);_t=setTimeout(s,150)}if(document.readyState==="complete")s();else window.addEventListener("load",s);if(typeof ResizeObserver!=="undefined")new ResizeObserver(d).observe(document.documentElement)})();</script></body>
+</body>
 </html>
